@@ -5,8 +5,6 @@ import { SubjectService } from './subject.service';
 import { SubjectRepository } from './subject.repository';
 import { SubjectInMemoryRepository } from '../../adapters/db/subject-in-memory.repository';
 
-jest.mock('bcryptjs');
-
 describe('SubjectService', () => {
   let service: SubjectService;
 
