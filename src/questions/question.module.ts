@@ -6,11 +6,13 @@ import { questionSchema } from './domain/entities/question.model';
 import { subjectSchema } from '../subject/domain/entities/subject.model';
 import { QuestionInMemoryRepository } from './adapters/db/question-in-memory.repository';
 import { QuestionRepository } from './domain/ports/question.repository';
+import { SubjectRepository } from '../subject/domain/ports/subject.repository';
+import { SubjectInMemoryRepository } from 'src/subject/adapters/db/subject-in-memory.repository';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'Reservation', schema: questionSchema },
+      { name: 'Question', schema: questionSchema },
       { name: 'Subject', schema: subjectSchema },
     ]),
   ],
@@ -21,6 +23,10 @@ import { QuestionRepository } from './domain/ports/question.repository';
       provide: QuestionRepository,
       useClass: QuestionInMemoryRepository,
     },
+    {
+      provide: SubjectRepository,
+      useClass: SubjectInMemoryRepository,
+    },
   ],
 })
-export class ReservationModule {}
+export class QuestionModule {}

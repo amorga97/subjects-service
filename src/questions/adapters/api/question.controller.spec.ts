@@ -1,29 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CreateReservationDto } from '../dto/create-questiondto';
-import { ReservationController } from './question.controller';
-import { ReservationService } from '../../domain/ports/question.service';
+import { CreateQuestionDto } from '../dto/create-questiondto';
+import { QuestionController } from './question.controller';
+import { QuestionService } from '../../domain/ports/question.service';
 
-describe('ReservationController', () => {
-  const mockReservation = {
-    bar: 'barid1234',
-    user: 'userid1234',
-    date: new Date(),
-    people: 5,
+describe('QuestionController', () => {
+  const mockQuestion = {
+    subject: '',
+    title: '',
+    options: [],
   };
 
-  let controller: ReservationController;
-  let service: ReservationService;
+  let controller: QuestionController;
+  let service: QuestionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ReservationController],
+      controllers: [QuestionController],
       providers: [
         {
-          provide: ReservationService,
+          provide: QuestionService,
           useValue: {
             create: jest.fn(),
             findOne: jest.fn(),
-            findAllByBar: jest.fn(),
+            findAllBySubject: jest.fn(),
             findAllByUser: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
@@ -32,8 +31,8 @@ describe('ReservationController', () => {
       ],
     }).compile();
 
-    controller = module.get<ReservationController>(ReservationController);
-    service = module.get<ReservationService>(ReservationService);
+    controller = module.get<QuestionController>(QuestionController);
+    service = module.get<QuestionService>(QuestionService);
   });
 
   it('should be defined', () => {
@@ -42,22 +41,22 @@ describe('ReservationController', () => {
 
   describe('When calling controller.create', () => {
     test('Then service.create should be called', async () => {
-      controller.create(mockReservation as CreateReservationDto, 'token');
+      controller.create(mockQuestion as CreateQuestionDto, 'subjectId');
       expect(service.create).toHaveBeenCalled();
     });
   });
 
-  describe('When calling controller.findAll with a bar id provided', () => {
-    test('Then service.findOneByBar should be called', async () => {
-      controller.findAll('barid', 'token');
-      expect(service.findAllByBar).toHaveBeenCalled();
+  describe('When calling controller.findAll with a Subject id provided', () => {
+    test('Then service.findOneBySubject should be called', async () => {
+      controller.findAll('subjectId');
+      expect(service.findAllBySubject).toHaveBeenCalled();
     });
   });
 
-  describe('When calling controller.findAll with no bar id provided', () => {
+  describe('When calling controller.findAll with no Subject id provided', () => {
     test('Then service.findOneByUser should be called', async () => {
-      controller.findAll(undefined, 'token');
-      expect(service.findAllByUser).toHaveBeenCalled();
+      controller.findAll(undefined);
+      expect(service.findAllBySubject).toHaveBeenCalled();
     });
   });
 

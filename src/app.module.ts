@@ -4,6 +4,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { QuestionModule } from './questions/question.module';
+import { SubjectModule } from './subject/subject.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { AppService } from './app.service';
           : process.env.DBNAME
       }?retryWrites=true&w=majority`,
     ),
+    QuestionModule,
+    SubjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

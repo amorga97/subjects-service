@@ -1,11 +1,12 @@
 import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Types } from 'mongoose';
-import { QuestionInMemoryRepository } from 'src/questions/adapters/db/question-in-memory.repository';
-import { CreateQuestionDto } from 'src/questions/adapters/dto/create-questiondto';
-import { iOption, iQuestion, questionSchema } from '../entities/question.model';
+import { QuestionInMemoryRepository } from '../../adapters/db/question-in-memory.repository';
+import { subjectSchema } from '../../../subject/domain/entities/subject.model';
+import { iQuestion, questionSchema } from '../entities/question.model';
 import { QuestionRepository } from './question.repository';
 import { QuestionService } from './question.service';
+import { SubjectRepository } from '../../../subject/domain/ports/subject.repository';
+import { SubjectInMemoryRepository } from '../../../subject/adapters/db/subject-in-memory.repository';
 
 describe('QuestionService', () => {
   const mockOption = {
@@ -58,6 +59,10 @@ describe('QuestionService', () => {
           provide: QuestionRepository,
           useClass: QuestionInMemoryRepository,
         },
+        {
+          provide: SubjectRepository,
+          useClass: SubjectInMemoryRepository,
+        },
       ],
       imports: [
         MongooseModule.forFeature([
@@ -73,10 +78,6 @@ describe('QuestionService', () => {
       .compile();
 
     service = module.get<QuestionService>(QuestionService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
   });
 
   describe('When calling service.create with valid params', () => {
@@ -110,35 +111,8 @@ describe('QuestionService', () => {
 
   describe('When calling service.create with the id of a non existing subject', () => {
     test('It should throw an error', async () => {
-      mockSubjectModel.exists.mockResolvedValue(null);
-      expect(async () => {
-        await service.create(mockQuestion, mockSubjectId);
-      }).rejects.toThrow();
-    });
-  });
-
-  describe('When calling service.create without all necessary params', () => {
-    test('It should throw an error', async () => {
-      expect(async () => {
-        await service.create(
-          { title: 'test' } as unknown as CreateQuestionDto,
-          'token',
-        );
-      }).rejects.toThrow();
-    });
-  });
-
-  describe('When calling service.create with wrongly typed params', () => {
-    test('It should throw an error', async () => {
-      expect(async () => {
-        await service.create(
-          {
-            ...mockQuestion,
-            title: 123,
-          } as unknown as CreateQuestionDto,
-          'token',
-        );
-      }).rejects.toThrow();
+      mockSubjectModel.exists.mockResolvedValueOnce(null);
+      expect(service.create(mockQuestion, mockSubjectId)).rejects.toThrow();
     });
   });
 
@@ -151,9 +125,9 @@ describe('QuestionService', () => {
     });
   });
 
-  describe('When calling service.findAllByBar with a non existing subject id', () => {
+  describe('When calling service.findAllBySubject with a non existing subject id', () => {
     test('It should throw an error', async () => {
-      mockSubjectModel.exists.mockReturnValue(false);
+      mockSubjectModel.exists.mockResolvedValueOnce(false);
       expect(async () => {
         await service.findAllBySubject(mockSubjectId);
       }).rejects.toThrow();
@@ -178,13 +152,10 @@ describe('QuestionService', () => {
   describe('When calling service.update with an existing question id', () => {
     test('It should return the updated question', async () => {
       mockQuestionModel.findByIdAndUpdate.mockReturnValueOnce({
-        populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockResolvedValue({
-            ...mockQuestion,
-            _id: '62b9a9f34e0dfa462d7dcbaf',
-            subject: mockSubjectId,
-          }),
-        }),
+        ...mockQuestion,
+        _id: '62b9a9f34e0dfa462d7dcbaf',
+        subject: mockSubjectId,
+        title: 'updated',
       });
       const result = await service.update('id', {
         ...mockQuestion,
@@ -194,20 +165,17 @@ describe('QuestionService', () => {
         ...mockQuestion,
         _id: '62b9a9f34e0dfa462d7dcbaf',
         subject: mockSubjectId,
+        title: 'updated',
       });
     });
   });
 
   describe('When calling service.update with a non existing question id', () => {
     test('It should throw an error', async () => {
-      mockQuestionModel.findByIdAndUpdate.mockReturnValue({
-        populate: jest.fn().mockReturnValue({
-          populate: jest.fn().mockResolvedValue(null),
-        }),
-      }),
-        expect(async () => {
-          await service.update('id', { ...mockQuestion, title: 'updated' });
-        }).rejects.toThrow();
+      mockQuestionModel.findByIdAndUpdate.mockReturnValue(null);
+      expect(async () => {
+        await service.update('id', { ...mockQuestion, title: 'updated' });
+      }).rejects.toThrow();
     });
   });
 
@@ -224,19 +192,6 @@ describe('QuestionService', () => {
   describe('When calling service.delete with a non existing question id', () => {
     test('It should throw an error', async () => {
       mockQuestionModel.findById.mockResolvedValueOnce(null);
-      expect(async () => {
-        await service.remove('id');
-      }).rejects.toThrow();
-    });
-  });
-
-  describe('When calling service.delete with an existing question id but the user does not exist', () => {
-    test('It should throw an error', async () => {
-      mockQuestionModel.findById.mockResolvedValueOnce({
-        delete: jest.fn().mockResolvedValue(mockQuestion),
-        id: 'id',
-      });
-      mockUserModel.findByIdAndUpdate.mockResolvedValue(null);
       expect(async () => {
         await service.remove('id');
       }).rejects.toThrow();

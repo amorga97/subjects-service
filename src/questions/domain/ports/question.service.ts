@@ -1,40 +1,53 @@
 import {
   Inject,
   Injectable,
+  Logger,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { SubjectRepository } from '../../../subject/domain/ports/subject.repository';
 import { CreateQuestionDto } from '../../adapters/dto/create-questiondto';
 import { UpdateQuestionDto } from '../../adapters/dto/update-question.dto';
 import { QuestionRepository } from './question.repository';
 
 @Injectable()
 export class QuestionService {
+  logger = new Logger('Question Service');
   constructor(
-    @Inject()
+    @Inject(QuestionRepository)
     private readonly Question: QuestionRepository,
+    @Inject(SubjectRepository)
+    private readonly Subject: SubjectRepository,
   ) {}
+
   async create(createQuestionDto: CreateQuestionDto, subjectId: string) {
     try {
-      if (!this.Subject.exists({ id: subjectId })) {
+      if (!(await this.Subject.exists(subjectId))) {
         throw new Error(
           'The subject id provided is not associated to any existing subject',
         );
       }
-      const question = await this.Question.create(createQuestionDto);
+
+      const question = await this.Question.create({
+        ...createQuestionDto,
+        subject: subjectId,
+      });
+
       return {
         question,
       };
     } catch (err) {
       if (err.name === 'ValidationError') {
+        this.logger.error(err.name);
         throw new NotAcceptableException();
       }
+      this.logger.error(err.message);
       throw new NotFoundException(err.message);
     }
   }
 
-  findAllBySubject(subjectId: string) {
-    if (this.Subject.exists({ id: question })) {
+  async findAllBySubject(subjectId: string) {
+    if (await this.Subject.exists(subjectId)) {
       return this.Question.find({ subject: subjectId });
     }
     throw new NotFoundException();
@@ -51,9 +64,8 @@ export class QuestionService {
       id,
       updateQuestionDto,
     );
-
     if (updatedQuestion === null) throw new NotFoundException();
-    return updatedQuestion;
+    return { question: updatedQuestion };
   }
 
   async remove(id: string) {
