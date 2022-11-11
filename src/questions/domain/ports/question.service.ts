@@ -5,6 +5,12 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
+import { EventService } from 'src/events/event-service.service';
+import {
+  CreateQuestionEvent,
+  RemoveQuestionEvent,
+  UpdateQuestionEvent,
+} from 'src/events/question.events';
 import { SubjectRepository } from '../../../subject/domain/ports/subject.repository';
 import { CreateQuestionDto } from '../../adapters/dto/create-questiondto';
 import { UpdateQuestionDto } from '../../adapters/dto/update-question.dto';
@@ -18,6 +24,7 @@ export class QuestionService {
     private readonly Question: QuestionRepository,
     @Inject(SubjectRepository)
     private readonly Subject: SubjectRepository,
+    private readonly eventService: EventService,
   ) {}
 
   async create(createQuestionDto: CreateQuestionDto, subjectId: string) {
@@ -32,6 +39,13 @@ export class QuestionService {
         ...createQuestionDto,
         subject: subjectId,
       });
+
+      this.eventService.emit(
+        new CreateQuestionEvent({
+          ...question,
+          id: question._id.toString(),
+        }),
+      );
 
       return {
         question,
@@ -64,11 +78,20 @@ export class QuestionService {
       id,
       updateQuestionDto,
     );
+    this.eventService.emit(
+      new UpdateQuestionEvent({
+        ...updatedQuestion,
+        id: updatedQuestion._id.toString(),
+      }),
+    );
     if (updatedQuestion === null) throw new NotFoundException();
     return { question: updatedQuestion };
   }
 
   async remove(id: string) {
-    return await this.Question.findByIdAndDelete(id);
+    const deletedQuestion = await this.Question.findByIdAndDelete(id);
+    if (deletedQuestion === null) throw new NotFoundException();
+    this.eventService.emit(new RemoveQuestionEvent({ id }));
+    return deletedQuestion;
   }
 }
