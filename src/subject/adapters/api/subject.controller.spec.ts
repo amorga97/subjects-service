@@ -21,8 +21,6 @@ describe('SubjectController', () => {
           useValue: {
             create: jest.fn(),
             findOne: jest.fn(),
-            login: jest.fn(),
-            loginWithToken: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
           },
@@ -43,7 +41,7 @@ describe('SubjectController', () => {
 
   describe('When calling controller.findOne', () => {
     test('Then service.findOne should be called', async () => {
-      controller.findOne('');
+      controller.findOne('', true);
       expect(service.findOne).toHaveBeenCalled();
     });
   });
