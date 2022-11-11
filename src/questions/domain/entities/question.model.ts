@@ -55,3 +55,7 @@ export class Question implements iQuestion {
     this.options = options;
   }
 }
+
+export type QuestionInDb<Question> = {
+  [_id in keyof Question]-?: string;
+};
