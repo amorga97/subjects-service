@@ -1,9 +1,7 @@
-import {
-  QuestionEventActions,
-  SubjectEventActions,
-} from './question-event.actions';
+import { QuestionEventActions } from './question-event.actions';
+import { SubjectEventActions } from './subject-event.action';
 
 export interface EventData {
-  action: QuestionEventActions | SubjectEventActions; //TODO: Create enum of possible actions in courses ms
+  action: QuestionEventActions | SubjectEventActions;
   data: { [key: string]: any };
 }

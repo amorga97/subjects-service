@@ -44,3 +44,17 @@ export interface iSubject {
   meta_data?: [string, string][];
   questions?: iQuestion[];
 }
+
+export class Subject implements iSubject {
+  _id?: Types.ObjectId;
+  title: string;
+  author: string;
+  description?: string;
+  institution?: string;
+  meta_data?: [string, string][];
+  questions?: iQuestion[];
+}
+
+export type SubjectInDb<Subject> = {
+  [_id in keyof Subject]-?: string;
+};
