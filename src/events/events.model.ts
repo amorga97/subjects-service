@@ -1,5 +1,5 @@
-import { QuestionEventActions } from './question-event.actions';
-import { SubjectEventActions } from './subject-event.action';
+import { QuestionEventActions } from './question.events';
+import { SubjectEventActions } from './subject.events';
 
 export interface EventData {
   action: QuestionEventActions | SubjectEventActions;
