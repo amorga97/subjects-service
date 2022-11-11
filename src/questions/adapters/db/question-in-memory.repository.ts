@@ -35,4 +35,8 @@ export class QuestionInMemoryRepository implements QuestionRepository {
     if (reservation === null) throw new NotFoundException();
     return await reservation.delete();
   }
+
+  async deleteManyBySubjectId(subjectId: string) {
+    return await this.Question.deleteMany({ subject: subjectId });
+  }
 }

@@ -1,4 +1,5 @@
 import { Schema, Types } from 'mongoose';
+import { iQuestion } from 'src/questions/domain/entities/question.model';
 
 export const subjectSchema = new Schema({
   title: {
@@ -41,4 +42,5 @@ export interface iSubject {
   description?: string;
   institution?: string;
   meta_data?: [string, string][];
+  questions?: iQuestion[];
 }

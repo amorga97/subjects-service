@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { QuestionRepository } from 'src/questions/domain/ports/question.repository';
 import { CreateSubjectDto } from '../../adapters/dto/create-subject.dto';
 import { UpdateSubjectDto } from '../../adapters/dto/update-subject.dto';
 import { SubjectRepository } from './subject.repository';
@@ -12,6 +13,7 @@ import { SubjectRepository } from './subject.repository';
 export class SubjectService {
   constructor(
     @Inject(SubjectRepository) private readonly Subject: SubjectRepository,
+    @Inject(QuestionRepository) private readonly Question: QuestionRepository,
   ) {}
   async create(createSubjectDto: CreateSubjectDto) {
     try {
@@ -25,10 +27,14 @@ export class SubjectService {
     }
   }
 
-  async findOne(id: string) {
-    const Subject = await this.Subject.findById(id);
-    if (Subject === null) throw new NotFoundException();
-    return Subject;
+  async findOne(id: string, withQuestions: boolean) {
+    const subject = await this.Subject.findById(id);
+    if (subject === null) throw new NotFoundException();
+    if (withQuestions) {
+      const questions = await this.Question.find({ subject: subject._id });
+      subject.questions = questions;
+    }
+    return subject;
   }
 
   async update(id: string, updateSubjectDto: UpdateSubjectDto) {
@@ -44,6 +50,7 @@ export class SubjectService {
     const removedSubject = await this.Subject.findByIdAndDelete(id);
     if (removedSubject === null)
       throw new NotFoundException('Subject not found');
+    await this.Question.deleteManyBySubjectId(id);
     return removedSubject;
   }
 }
