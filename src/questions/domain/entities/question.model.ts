@@ -56,6 +56,6 @@ export class Question implements iQuestion {
   }
 }
 
-export type QuestionInDb<Question> = {
-  [_id in keyof Question]-?: string;
-};
+export interface QuestionInDb extends Omit<Question, '_id'> {
+  id: string;
+}

@@ -55,6 +55,6 @@ export class Subject implements iSubject {
   questions?: iQuestion[];
 }
 
-export type SubjectInDb<Subject> = {
-  [_id in keyof Subject]-?: string;
-};
+export interface SubjectInDb extends Omit<Subject, '_id'> {
+  id: string;
+}

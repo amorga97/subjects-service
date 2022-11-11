@@ -1,7 +1,4 @@
-import {
-  Subject,
-  SubjectInDb,
-} from 'src/subject/domain/entities/subject.model';
+import { SubjectInDb } from 'src/subject/domain/entities/subject.model';
 import { EventData } from './events.model';
 
 export const enum SubjectEventActions {
@@ -13,14 +10,14 @@ export const enum SubjectEventActions {
 export class CreateSubjectEvent implements EventData {
   action: SubjectEventActions.CREATE;
   data: { [key: string]: any };
-  constructor(data: SubjectInDb<Subject>) {
+  constructor(data: SubjectInDb) {
     this.data = data;
   }
 }
 export class UpdateSubjectEvent implements EventData {
   action: SubjectEventActions.UPDATE;
   data: { [key: string]: any };
-  constructor(data: SubjectInDb<Subject>) {
+  constructor(data: SubjectInDb) {
     this.data = data;
   }
 }
