@@ -62,7 +62,6 @@ describe('QuestionService', () => {
   let service: QuestionService;
 
   beforeEach(async () => {
-    const mockEmit = jest.fn();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         QuestionService,
@@ -74,7 +73,7 @@ describe('QuestionService', () => {
           provide: SubjectRepository,
           useClass: SubjectInMemoryRepository,
         },
-        { provide: EventService, useValue: { emit: mockEmit } },
+        { provide: EventService, useValue: { emit: jest.fn() } },
       ],
       imports: [
         MongooseModule.forFeature([

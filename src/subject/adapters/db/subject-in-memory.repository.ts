@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { iSubject } from '../../domain/entities/subject.model';
@@ -25,7 +25,9 @@ export class SubjectInMemoryRepository implements SubjectRepository {
     });
   }
   async findByIdAndDelete(id: string) {
-    return await this.Subject.findByIdAndDelete(id);
+    const subject = await this.Subject.findById(id);
+    if (subject === null) throw new NotFoundException();
+    return await subject.delete();
   }
 
   async exists(id: string) {
