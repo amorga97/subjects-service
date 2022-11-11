@@ -21,7 +21,6 @@ export class QuestionController {
     @Body() createQuestionDto: CreateQuestionDto,
     @Query('subjectId') subjectId: string,
   ) {
-    console.log('hello');
     return this.questionService.create(createQuestionDto, subjectId);
   }
 

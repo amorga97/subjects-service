@@ -5,15 +5,20 @@ import { subjectSchema } from './domain/entities/subject.model';
 import { SubjectRepository } from './domain/ports/subject.repository';
 import { SubjectInMemoryRepository } from './adapters/db/subject-in-memory.repository';
 import { SubjectController } from './adapters/api/subject.controller';
+import { QuestionRepository } from 'src/questions/domain/ports/question.repository';
+import { QuestionInMemoryRepository } from 'src/questions/adapters/db/question-in-memory.repository';
+import { questionSchema } from 'src/questions/domain/entities/question.model';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Subject', schema: subjectSchema }]),
+    MongooseModule.forFeature([{ name: 'Question', schema: questionSchema }]),
   ],
   controllers: [SubjectController],
   providers: [
     SubjectService,
     { provide: SubjectRepository, useClass: SubjectInMemoryRepository },
+    { provide: QuestionRepository, useClass: QuestionInMemoryRepository },
   ],
 })
 export class SubjectModule {}

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { SubjectService } from '../../domain/ports/subject.service';
 import { CreateSubjectDto } from '../dto/create-subject.dto';
@@ -21,8 +22,8 @@ export class SubjectController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subjectService.findOne(id);
+  findOne(@Param('id') id: string, @Query('questions') withQuestions: boolean) {
+    return this.subjectService.findOne(id, withQuestions);
   }
 
   @Patch(':id')
