@@ -31,9 +31,9 @@ export class QuestionInMemoryRepository implements QuestionRepository {
     });
   }
   async findByIdAndDelete(id: string) {
-    const reservation = await this.Question.findById(id);
-    if (reservation === null) throw new NotFoundException();
-    return await reservation.delete();
+    const deletedQuestion = await this.Question.findById(id);
+    if (deletedQuestion === null) throw new NotFoundException();
+    return await deletedQuestion.delete();
   }
 
   async deleteManyBySubjectId(subjectId: string) {

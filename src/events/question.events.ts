@@ -1,4 +1,4 @@
-import { QuestionInDb } from 'src/questions/domain/entities/question.model';
+import { Question } from '../questions/domain/entities/question.model';
 import { EventData } from './events.model';
 
 export const enum QuestionEventActions {
@@ -10,15 +10,25 @@ export const enum QuestionEventActions {
 export class CreateQuestionEvent implements EventData {
   action: QuestionEventActions.CREATE;
   data: { [key: string]: any };
-  constructor(data: QuestionInDb) {
-    this.data = data;
+  constructor(question: Question) {
+    const questionForEvent = {
+      ...question,
+      id: question._id.toString(),
+    };
+    delete questionForEvent._id;
+    this.data = questionForEvent;
   }
 }
 export class UpdateQuestionEvent implements EventData {
   action: QuestionEventActions.UPDATE;
   data: { [key: string]: any };
-  constructor(data: QuestionInDb) {
-    this.data = data;
+  constructor(question: Question) {
+    const questionForEvent = {
+      ...question,
+      id: question._id.toString(),
+    };
+    delete questionForEvent._id;
+    this.data = questionForEvent;
   }
 }
 
