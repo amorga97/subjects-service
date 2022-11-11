@@ -4,6 +4,12 @@ import { iSubject, subjectSchema } from '../entities/subject.model';
 import { SubjectService } from './subject.service';
 import { SubjectRepository } from './subject.repository';
 import { SubjectInMemoryRepository } from '../../adapters/db/subject-in-memory.repository';
+import {
+  iQuestion,
+  questionSchema,
+} from '../../../questions/domain/entities/question.model';
+import { QuestionRepository } from '../../../questions/domain/ports/question.repository';
+import { QuestionInMemoryRepository } from '../../../questions/adapters/db/question-in-memory.repository';
 
 describe('SubjectService', () => {
   let service: SubjectService;
@@ -13,6 +19,17 @@ describe('SubjectService', () => {
   const mockSubject: iSubject = {
     title: 'test subject',
     author: mockAuthorId,
+  };
+
+  const mockQuestion: iQuestion = {
+    subject: '123123123',
+    title: 'Test',
+    options: [
+      {
+        description: 'this is a test option',
+        isCorrect: true,
+      },
+    ],
   };
 
   const mockSubjectModel = {
@@ -25,18 +42,29 @@ describe('SubjectService', () => {
     findByIdAndDelete: jest.fn().mockResolvedValue(mockSubject),
   };
 
+  const mockQuestionModel = {
+    find: jest.fn().mockResolvedValue([mockQuestion]),
+    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SubjectService,
         { provide: SubjectRepository, useClass: SubjectInMemoryRepository },
+        { provide: QuestionRepository, useClass: QuestionInMemoryRepository },
       ],
       imports: [
         MongooseModule.forFeature([{ name: 'Subject', schema: subjectSchema }]),
+        MongooseModule.forFeature([
+          { name: 'Question', schema: questionSchema },
+        ]),
       ],
     })
       .overrideProvider(getModelToken('Subject'))
       .useValue(mockSubjectModel)
+      .overrideProvider(getModelToken('Question'))
+      .useValue(mockQuestionModel)
       .compile();
 
     service = module.get<SubjectService>(SubjectService);
@@ -64,18 +92,24 @@ describe('SubjectService', () => {
     });
   });
 
-  describe('When calling service.findOne with a valid subject id', () => {
+  describe('When calling service.findOne with a valid subject id with questions', () => {
     test('Then it should return the subject from the db', async () => {
-      mockSubjectModel.findById.mockResolvedValue(mockSubject);
-      expect(await service.findOne('id')).toEqual(mockSubject);
+      const result = await service.findOne('id', true);
+      expect(result).toEqual({ ...mockSubject, questions: [mockQuestion] });
+    });
+  });
+
+  describe('When calling service.findOne with a valid subject id without questions', () => {
+    test('Then it should return the subject from the db', async () => {
+      expect(await service.findOne('id', false)).toEqual(mockSubject);
     });
   });
 
   describe('When calling service.findOne with an invalid subject id', () => {
     test('Then it should throw an error', async () => {
-      mockSubjectModel.findById.mockResolvedValue(null);
+      mockSubjectModel.findById.mockResolvedValueOnce(null);
       expect(async () => {
-        await service.findOne('id');
+        await service.findOne('id', false);
       }).rejects.toThrow();
     });
   });
@@ -90,7 +124,7 @@ describe('SubjectService', () => {
 
   describe('When calling service.update with an invalid subject id', () => {
     test('Then it should throw an error', async () => {
-      mockSubjectModel.findByIdAndUpdate.mockResolvedValue(null);
+      mockSubjectModel.findByIdAndUpdate.mockResolvedValueOnce(null);
       expect(async () => {
         await service.update('id', { ...mockSubject, title: 'updated' });
       }).rejects.toThrow();
@@ -105,7 +139,7 @@ describe('SubjectService', () => {
 
   describe('When calling service.remove with an invalid subject id', () => {
     test('Then it should throw an error', async () => {
-      mockSubjectModel.findByIdAndDelete.mockResolvedValue(null);
+      mockSubjectModel.findByIdAndDelete.mockResolvedValueOnce(null);
       expect(async () => {
         await service.remove('id');
       }).rejects.toThrow();

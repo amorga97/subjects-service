@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { QuestionRepository } from 'src/questions/domain/ports/question.repository';
+import { QuestionRepository } from '../../../questions/domain/ports/question.repository';
 import { CreateSubjectDto } from '../../adapters/dto/create-subject.dto';
 import { UpdateSubjectDto } from '../../adapters/dto/update-subject.dto';
 import { SubjectRepository } from './subject.repository';
@@ -32,7 +32,7 @@ export class SubjectService {
     if (subject === null) throw new NotFoundException();
     if (withQuestions) {
       const questions = await this.Question.find({ subject: subject._id });
-      subject.questions = questions;
+      return { ...subject, questions };
     }
     return subject;
   }
