@@ -39,17 +39,20 @@ describe('SubjectService', () => {
   };
 
   const mockSubjectModel = {
-    create: jest
-      .fn()
-      .mockResolvedValue({ ...mockSubject, _id: '62b9a9f34e0dfa462d7dcbaf' }),
+    create: jest.fn().mockResolvedValue({
+      toObject: jest
+        .fn()
+        .mockReturnValue({ ...mockSubject, id: '62b9a9f34e0dfa462d7dcbaf' }),
+    }),
     findOne: jest.fn().mockResolvedValue(mockSubject),
     findById: jest.fn().mockResolvedValue(mockSubject),
     findByIdAndUpdate: jest.fn().mockResolvedValue({
-      ...mockSubject,
-      title: 'updated',
-      _id: '62b9a9f34e0dfa462d7dcbaf',
+      toObject: jest.fn().mockReturnValue({
+        ...mockSubject,
+        title: 'updated',
+        id: '62b9a9f34e0dfa462d7dcbaf',
+      }),
     }),
-    findByIdAndDelete: jest.fn().mockResolvedValue(mockSubject),
   };
 
   const mockQuestionModel = {
@@ -86,12 +89,12 @@ describe('SubjectService', () => {
       const result = await service.create(mockSubject);
       expect(result).toEqual({
         ...mockSubject,
-        _id: '62b9a9f34e0dfa462d7dcbaf',
+        id: '62b9a9f34e0dfa462d7dcbaf',
       });
       expect(service.eventService.emit).toHaveBeenCalledWith(
         new CreateSubjectEvent({
           ...mockSubject,
-          _id: '62b9a9f34e0dfa462d7dcbaf',
+          id: '62b9a9f34e0dfa462d7dcbaf',
         } as unknown as Subject),
       );
     });
@@ -141,13 +144,13 @@ describe('SubjectService', () => {
       expect(result).toEqual({
         ...mockSubject,
         title: 'updated',
-        _id: '62b9a9f34e0dfa462d7dcbaf',
+        id: '62b9a9f34e0dfa462d7dcbaf',
       });
       expect(service.eventService.emit).toHaveBeenCalledWith(
         new UpdateSubjectEvent({
           ...mockSubject,
           title: 'updated',
-          _id: '62b9a9f34e0dfa462d7dcbaf',
+          id: '62b9a9f34e0dfa462d7dcbaf',
         } as unknown as Subject),
       );
     });
@@ -166,9 +169,17 @@ describe('SubjectService', () => {
   describe('When calling service.remove with a valid subject id', () => {
     test('Then it should return the deleted subject and emit an event', async () => {
       mockSubjectModel.findById.mockResolvedValueOnce({
-        delete: jest.fn().mockResolvedValue(mockSubject),
+        delete: jest.fn().mockResolvedValue({
+          toObject: jest.fn().mockReturnValue({
+            ...mockSubject,
+            id: '62b9a9f34e0dfa462d7dcbaf',
+          }),
+        }),
       });
-      expect(await service.remove('id')).toEqual(mockSubject);
+      expect(await service.remove('id')).toEqual({
+        ...mockSubject,
+        id: '62b9a9f34e0dfa462d7dcbaf',
+      });
       expect(service.eventService.emit).toHaveBeenCalledWith(
         new RemoveSubjectEvent({ id: 'id' }),
       );

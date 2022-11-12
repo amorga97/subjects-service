@@ -12,7 +12,6 @@ export class CreateSubjectEvent implements EventData {
   data: Subject;
   constructor(subject: Subject) {
     this.action = SubjectEventActions.CREATE;
-    delete subject._id;
     this.data = subject;
   }
 
@@ -25,7 +24,6 @@ export class UpdateSubjectEvent implements EventData {
   data: Subject;
   constructor(subject: Subject) {
     this.action = SubjectEventActions.UPDATE;
-    delete subject._id;
     this.data = subject;
   }
 

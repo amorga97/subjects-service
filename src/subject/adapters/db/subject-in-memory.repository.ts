@@ -29,7 +29,7 @@ export class SubjectInMemoryRepository implements SubjectRepository {
   async findByIdAndDelete(id: string) {
     const subject = await this.Subject.findById(id);
     if (subject === null) throw new NotFoundException();
-    return await subject.delete();
+    return (await subject.delete()).toObject();
   }
 
   async exists(id: string) {

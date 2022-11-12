@@ -30,11 +30,18 @@ export const subjectSchema = new Schema({
   },
 })
   .set('toJSON', {
-    transform: (_, returnedObj) => {
-      delete returnedObj.__v;
+    transform: (_, ret) => {
+      delete ret.__v;
     },
   })
-  .set('toObject', { virtuals: true });
+  .set('toObject', {
+    transform: (_, ret) => {
+      delete ret.__v;
+      delete ret._id;
+      return ret;
+    },
+    virtuals: true,
+  });
 
 export interface iSubject {
   _id?: Types.ObjectId;

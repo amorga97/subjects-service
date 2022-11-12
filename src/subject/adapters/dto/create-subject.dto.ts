@@ -19,5 +19,5 @@ export class CreateSubjectDto {
   institution?: string;
   @IsOptional()
   @ValidateNested({ each: true })
-  meta_data?: [string, string][];
+  meta_data?: string[][];
 }
