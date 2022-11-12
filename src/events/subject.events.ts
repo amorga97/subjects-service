@@ -1,5 +1,5 @@
 import { Subject } from 'src/subject/domain/entities/subject.model';
-import { EventData } from './events.model';
+import { EventData, EventInfo } from './events.model';
 
 export const enum SubjectEventActions {
   CREATE = 'SUBJECT_CREATE',
@@ -7,24 +7,24 @@ export const enum SubjectEventActions {
   REMOVE = 'SUBJECT_REMOVE',
 }
 
-export class CreateSubjectEvent implements EventData {
-  action: SubjectEventActions.CREATE;
-  data: Subject;
+export class CreateSubjectEvent implements EventData<Subject> {
+  topic: 'subject';
+  info: EventInfo<Subject>;
   constructor(subject: Subject) {
-    this.action = SubjectEventActions.CREATE;
-    this.data = subject;
+    this.topic = 'subject';
+    this.info = { action: SubjectEventActions.CREATE, data: subject };
   }
 
   toString() {
     return JSON.stringify(this);
   }
 }
-export class UpdateSubjectEvent implements EventData {
-  action: SubjectEventActions.UPDATE;
-  data: Subject;
+export class UpdateSubjectEvent implements EventData<Subject> {
+  topic: 'subject';
+  info: EventInfo<Subject>;
   constructor(subject: Subject) {
-    this.action = SubjectEventActions.UPDATE;
-    this.data = subject;
+    this.topic = 'subject';
+    this.info = { action: SubjectEventActions.UPDATE, data: subject };
   }
 
   toString() {
@@ -32,12 +32,12 @@ export class UpdateSubjectEvent implements EventData {
   }
 }
 
-export class RemoveSubjectEvent implements EventData {
-  action: SubjectEventActions.REMOVE;
-  data: { id: string };
+export class RemoveSubjectEvent implements EventData<Subject> {
+  topic: 'subject';
+  info: EventInfo<Subject>;
   constructor(data: { id: string }) {
-    this.action = SubjectEventActions.REMOVE;
-    this.data = data;
+    this.topic = 'subject';
+    this.info = { action: SubjectEventActions.REMOVE, data };
   }
 
   toString() {

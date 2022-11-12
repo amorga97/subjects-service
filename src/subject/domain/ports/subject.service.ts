@@ -26,8 +26,7 @@ export class SubjectService {
   async create(createSubjectDto: CreateSubjectDto) {
     try {
       const registeredSubject = await this.Subject.create(createSubjectDto);
-      const { action, data } = new CreateSubjectEvent(registeredSubject);
-      this.eventService.emit({ action, data });
+      this.eventService.emit(new CreateSubjectEvent(registeredSubject));
       return registeredSubject;
     } catch (err) {
       if (err.code === 11000)
