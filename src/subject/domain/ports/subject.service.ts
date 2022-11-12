@@ -40,7 +40,7 @@ export class SubjectService {
     const subject = await this.Subject.findById(id);
     if (subject === null) throw new NotFoundException();
     if (withQuestions) {
-      const questions = await this.Question.find({ subject: subject._id });
+      const questions = await this.Question.find({ subject: subject.id });
       return { ...subject, questions };
     }
     return subject;

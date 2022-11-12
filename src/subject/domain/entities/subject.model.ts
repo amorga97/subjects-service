@@ -45,6 +45,7 @@ export const subjectSchema = new Schema({
 
 export interface iSubject {
   _id?: Types.ObjectId;
+  id?: string;
   title: string;
   author: string;
   description?: string;
@@ -55,6 +56,7 @@ export interface iSubject {
 
 export class Subject implements iSubject {
   _id?: Types.ObjectId;
+  id?: string;
   title: string;
   author: string;
   description?: string;
