@@ -7,6 +7,11 @@ export class EventService {
   constructor(@Inject('COURSES') private readonly coursesClient: ClientKafka) {}
 
   emit({ action, data }: EventData) {
-    this.coursesClient.emit(action, data);
+    // this.coursesClient.emit('courses', { action, data });
+    const topic = action
+      .split('_')
+      .map((section) => section.toLowerCase())
+      .join('.');
+    this.coursesClient.emit(topic, data);
   }
 }

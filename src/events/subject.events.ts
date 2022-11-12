@@ -1,7 +1,4 @@
-import {
-  Subject,
-  SubjectInDb,
-} from 'src/subject/domain/entities/subject.model';
+import { Subject } from 'src/subject/domain/entities/subject.model';
 import { EventData } from './events.model';
 
 export const enum SubjectEventActions {
@@ -12,14 +9,11 @@ export const enum SubjectEventActions {
 
 export class CreateSubjectEvent implements EventData {
   action: SubjectEventActions.CREATE;
-  data: SubjectInDb;
+  data: Subject;
   constructor(subject: Subject) {
-    const subjectForEvent = {
-      ...subject,
-      id: subject._id.toString(),
-    };
-    delete subjectForEvent._id;
-    this.data = subjectForEvent;
+    this.action = SubjectEventActions.CREATE;
+    delete subject._id;
+    this.data = subject;
   }
 
   toString() {
@@ -28,14 +22,11 @@ export class CreateSubjectEvent implements EventData {
 }
 export class UpdateSubjectEvent implements EventData {
   action: SubjectEventActions.UPDATE;
-  data: SubjectInDb;
+  data: Subject;
   constructor(subject: Subject) {
-    const subjectForEvent = {
-      ...subject,
-      id: subject._id.toString(),
-    };
-    delete subjectForEvent._id;
-    this.data = subjectForEvent;
+    this.action = SubjectEventActions.UPDATE;
+    delete subject._id;
+    this.data = subject;
   }
 
   toString() {
@@ -47,6 +38,7 @@ export class RemoveSubjectEvent implements EventData {
   action: SubjectEventActions.REMOVE;
   data: { id: string };
   constructor(data: { id: string }) {
+    this.action = SubjectEventActions.REMOVE;
     this.data = data;
   }
 

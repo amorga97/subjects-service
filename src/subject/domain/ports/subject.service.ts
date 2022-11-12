@@ -22,10 +22,12 @@ export class SubjectService {
     @Inject(QuestionRepository) private readonly Question: QuestionRepository,
     public readonly eventService: EventService,
   ) {}
+
   async create(createSubjectDto: CreateSubjectDto) {
     try {
       const registeredSubject = await this.Subject.create(createSubjectDto);
-      this.eventService.emit(new CreateSubjectEvent(registeredSubject));
+      const { action, data } = new CreateSubjectEvent(registeredSubject);
+      this.eventService.emit({ action, data });
       return registeredSubject;
     } catch (err) {
       if (err.code === 11000)
