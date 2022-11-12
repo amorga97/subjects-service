@@ -11,12 +11,8 @@ export class CreateQuestionEvent implements EventData {
   action: QuestionEventActions.CREATE;
   data: { [key: string]: any };
   constructor(question: Question) {
-    const questionForEvent = {
-      ...question,
-      id: question._id.toString(),
-    };
-    delete questionForEvent._id;
-    this.data = questionForEvent;
+    this.action = QuestionEventActions.CREATE;
+    this.data = question;
   }
 
   toString() {
@@ -27,12 +23,8 @@ export class UpdateQuestionEvent implements EventData {
   action: QuestionEventActions.UPDATE;
   data: { [key: string]: any };
   constructor(question: Question) {
-    const questionForEvent = {
-      ...question,
-      id: question._id.toString(),
-    };
-    delete questionForEvent._id;
-    this.data = questionForEvent;
+    this.action = QuestionEventActions.UPDATE;
+    this.data = question;
   }
 
   toString() {
@@ -44,6 +36,7 @@ export class RemoveQuestionEvent implements EventData {
   action: QuestionEventActions.REMOVE;
   data: { [key: string]: any };
   constructor(data: { id: string }) {
+    this.action = QuestionEventActions.REMOVE;
     this.data = data;
   }
 

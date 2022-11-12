@@ -27,27 +27,21 @@ export class QuestionService {
     public readonly eventService: EventService,
   ) {}
 
-  async create(createQuestionDto: CreateQuestionDto, subjectId: string) {
+  async create(createQuestionDto: CreateQuestionDto) {
     try {
-      if (!(await this.Subject.exists(subjectId))) {
+      if (!(await this.Subject.exists(createQuestionDto.subject))) {
         throw new Error(
           'The subject id provided is not associated to any existing subject',
         );
       }
-
-      const question = await this.Question.create({
-        ...createQuestionDto,
-        subject: subjectId,
-      });
-
+      const question = await this.Question.create(createQuestionDto);
       this.eventService.emit(new CreateQuestionEvent(question));
-
       return {
         question,
       };
     } catch (err) {
       if (err.name === 'ValidationError') {
-        this.logger.error(err.name);
+        this.logger.error(err);
         throw new NotAcceptableException();
       }
       this.logger.error(err.message);

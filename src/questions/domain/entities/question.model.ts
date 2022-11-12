@@ -16,7 +16,6 @@ export const questionSchema = new Schema({
     required: true,
     length: { min: 2 },
   },
-  people: { type: Number, required: true },
 })
   .set('toJSON', {
     transform: (_, ret) => {

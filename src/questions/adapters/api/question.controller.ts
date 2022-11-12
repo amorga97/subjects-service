@@ -17,11 +17,8 @@ export class QuestionController {
   constructor(private readonly questionService: QuestionService) {}
 
   @Post()
-  create(
-    @Body() createQuestionDto: CreateQuestionDto,
-    @Query('subjectId') subjectId: string,
-  ) {
-    return this.questionService.create(createQuestionDto, subjectId);
+  create(@Body() createQuestionDto: CreateQuestionDto) {
+    return this.questionService.create(createQuestionDto);
   }
 
   @Get()
