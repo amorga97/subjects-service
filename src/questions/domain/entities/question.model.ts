@@ -17,11 +17,20 @@ export const questionSchema = new Schema({
     length: { min: 2 },
   },
   people: { type: Number, required: true },
-}).set('toJSON', {
-  transform: (doc, returnedObj) => {
-    delete returnedObj.__v;
-  },
-});
+})
+  .set('toJSON', {
+    transform: (_, ret) => {
+      delete ret.__v;
+    },
+  })
+  .set('toObject', {
+    transform: (_, ret) => {
+      delete ret.__v;
+      delete ret._id;
+      return ret;
+    },
+    virtuals: true,
+  });
 
 export interface iOption {
   description: string;
