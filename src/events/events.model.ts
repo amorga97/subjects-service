@@ -1,7 +1,12 @@
 import { QuestionEventActions } from './question.events';
 import { SubjectEventActions } from './subject.events';
 
-export interface EventData {
-  action: QuestionEventActions | SubjectEventActions;
-  data: { [key: string]: any };
+export interface EventData<T> {
+  topic: 'subject' | 'question';
+  info: EventInfo<T>;
+}
+
+export interface EventInfo<T> {
+  action: SubjectEventActions | QuestionEventActions;
+  data: T | { id: string };
 }
