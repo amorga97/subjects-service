@@ -18,6 +18,10 @@ export class CreateQuestionEvent implements EventData {
     delete questionForEvent._id;
     this.data = questionForEvent;
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 export class UpdateQuestionEvent implements EventData {
   action: QuestionEventActions.UPDATE;
@@ -30,6 +34,10 @@ export class UpdateQuestionEvent implements EventData {
     delete questionForEvent._id;
     this.data = questionForEvent;
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 
 export class RemoveQuestionEvent implements EventData {
@@ -37,5 +45,9 @@ export class RemoveQuestionEvent implements EventData {
   data: { [key: string]: any };
   constructor(data: { id: string }) {
     this.data = data;
+  }
+
+  toString() {
+    return JSON.stringify(this);
   }
 }

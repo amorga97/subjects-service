@@ -21,6 +21,10 @@ export class CreateSubjectEvent implements EventData {
     delete subjectForEvent._id;
     this.data = subjectForEvent;
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 export class UpdateSubjectEvent implements EventData {
   action: SubjectEventActions.UPDATE;
@@ -33,6 +37,10 @@ export class UpdateSubjectEvent implements EventData {
     delete subjectForEvent._id;
     this.data = subjectForEvent;
   }
+
+  toString() {
+    return JSON.stringify(this);
+  }
 }
 
 export class RemoveSubjectEvent implements EventData {
@@ -40,5 +48,9 @@ export class RemoveSubjectEvent implements EventData {
   data: { id: string };
   constructor(data: { id: string }) {
     this.data = data;
+  }
+
+  toString() {
+    return JSON.stringify(this);
   }
 }
