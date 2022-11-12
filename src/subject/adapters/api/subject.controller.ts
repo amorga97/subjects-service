@@ -7,19 +7,14 @@ import {
   Param,
   Delete,
   Query,
-  Inject,
 } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
 import { SubjectService } from '../../domain/ports/subject.service';
 import { CreateSubjectDto } from '../dto/create-subject.dto';
 import { UpdateSubjectDto } from '../dto/update-subject.dto';
 
 @Controller('subject')
 export class SubjectController {
-  constructor(
-    private readonly subjectService: SubjectService,
-    @Inject('COURSES') private readonly coursesClient: ClientKafka,
-  ) {}
+  constructor(private readonly subjectService: SubjectService) {}
 
   @Post('')
   create(@Body() createSubjectDto: CreateSubjectDto) {
