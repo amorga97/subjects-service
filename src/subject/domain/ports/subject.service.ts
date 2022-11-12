@@ -4,6 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  CreateSubjectEvent,
+  RemoveSubjectEvent,
+  UpdateSubjectEvent,
+} from '../../../events/subject.events';
+import { EventService } from '../../../events/event-service.service';
 import { QuestionRepository } from '../../../questions/domain/ports/question.repository';
 import { CreateSubjectDto } from '../../adapters/dto/create-subject.dto';
 import { UpdateSubjectDto } from '../../adapters/dto/update-subject.dto';
@@ -14,10 +20,14 @@ export class SubjectService {
   constructor(
     @Inject(SubjectRepository) private readonly Subject: SubjectRepository,
     @Inject(QuestionRepository) private readonly Question: QuestionRepository,
+    public readonly eventService: EventService,
   ) {}
+
   async create(createSubjectDto: CreateSubjectDto) {
     try {
       const registeredSubject = await this.Subject.create(createSubjectDto);
+      const { action, data } = new CreateSubjectEvent(registeredSubject);
+      this.eventService.emit({ action, data });
       return registeredSubject;
     } catch (err) {
       if (err.code === 11000)
@@ -43,14 +53,13 @@ export class SubjectService {
     });
     if (updatedSubject === null)
       throw new NotFoundException('Subject not found');
+    this.eventService.emit(new UpdateSubjectEvent(updatedSubject));
     return updatedSubject;
   }
 
   async remove(id: string) {
     const removedSubject = await this.Subject.findByIdAndDelete(id);
-    if (removedSubject === null)
-      throw new NotFoundException('Subject not found');
-    await this.Question.deleteManyBySubjectId(id);
+    this.eventService.emit(new RemoveSubjectEvent({ id }));
     return removedSubject;
   }
 }

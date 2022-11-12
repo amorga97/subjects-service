@@ -28,12 +28,20 @@ export const subjectSchema = new Schema({
     type: [[String, String]],
     required: false,
   },
-}).set('toJSON', {
-  transform: (_, returnedObj) => {
-    delete returnedObj.__v;
-    delete returnedObj.password;
-  },
-});
+})
+  .set('toJSON', {
+    transform: (_, ret) => {
+      delete ret.__v;
+    },
+  })
+  .set('toObject', {
+    transform: (_, ret) => {
+      delete ret.__v;
+      delete ret._id;
+      return ret;
+    },
+    virtuals: true,
+  });
 
 export interface iSubject {
   _id?: Types.ObjectId;
@@ -41,6 +49,20 @@ export interface iSubject {
   author: string;
   description?: string;
   institution?: string;
-  meta_data?: [string, string][];
+  meta_data?: string[][];
   questions?: iQuestion[];
+}
+
+export class Subject implements iSubject {
+  _id?: Types.ObjectId;
+  title: string;
+  author: string;
+  description?: string;
+  institution?: string;
+  meta_data?: string[][];
+  questions?: iQuestion[];
+}
+
+export interface SubjectInDb extends Omit<Subject, '_id'> {
+  id: string;
 }

@@ -41,7 +41,7 @@ describe('QuestionController', () => {
 
   describe('When calling controller.create', () => {
     test('Then service.create should be called', async () => {
-      controller.create(mockQuestion as CreateQuestionDto, 'subjectId');
+      controller.create(mockQuestion as CreateQuestionDto);
       expect(service.create).toHaveBeenCalled();
     });
   });

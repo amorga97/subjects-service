@@ -16,9 +16,8 @@ export class QuestionInMemoryRepository implements QuestionRepository {
   }
 
   async create(questionData: iQuestion) {
-    // TODO: Check whether sibject exists in DB
     const question = await this.Question.create(questionData);
-    return question;
+    return question.toObject();
   }
 
   async findById(id: string) {
@@ -26,14 +25,20 @@ export class QuestionInMemoryRepository implements QuestionRepository {
   }
 
   async findByIdAndUpdate(id: string, updateQuestionData: Partial<iQuestion>) {
-    return await this.Question.findByIdAndUpdate(id, updateQuestionData, {
-      new: true,
-    });
+    const question = await this.Question.findByIdAndUpdate(
+      id,
+      updateQuestionData,
+      {
+        new: true,
+      },
+    );
+    if (question === null) throw new NotFoundException();
+    return question.toObject();
   }
   async findByIdAndDelete(id: string) {
-    const reservation = await this.Question.findById(id);
-    if (reservation === null) throw new NotFoundException();
-    return await reservation.delete();
+    const deletedQuestion = await this.Question.findById(id);
+    if (deletedQuestion === null) throw new NotFoundException();
+    return (await deletedQuestion.delete()).toObject();
   }
 
   async deleteManyBySubjectId(subjectId: string) {

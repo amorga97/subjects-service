@@ -10,7 +10,7 @@ async function bootstrap() {
       enableDebugMessages: true,
     }),
   );
-  await app.listen(3331);
+  await app.listen(process.env.PORT);
   const kafkaConsumer =
     await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
       transport: Transport.KAFKA,

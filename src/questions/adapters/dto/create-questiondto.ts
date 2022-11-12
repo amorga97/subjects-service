@@ -7,6 +7,7 @@ import {
   MaxLength,
   MinLength,
   ValidateNested,
+  ArrayMinSize,
 } from 'class-validator';
 import { iOption } from 'src/questions/domain/entities/question.model';
 
@@ -15,10 +16,13 @@ export class CreateQuestionDto {
   @IsString()
   title: string;
   @IsArray()
-  @MinLength(3)
+  @ArrayMinSize(3)
   @ValidateNested({ each: true })
   @Type(() => OptionDto)
   options: OptionDto[];
+  @IsNotEmpty()
+  @IsString()
+  subject: string;
 }
 
 export class OptionDto implements iOption {

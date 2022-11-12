@@ -2,17 +2,29 @@ import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuestionInMemoryRepository } from '../../adapters/db/question-in-memory.repository';
 import { subjectSchema } from '../../../subject/domain/entities/subject.model';
-import { iQuestion, questionSchema } from '../entities/question.model';
+import {
+  iQuestion,
+  Question,
+  questionSchema,
+} from '../entities/question.model';
 import { QuestionRepository } from './question.repository';
 import { QuestionService } from './question.service';
 import { SubjectRepository } from '../../../subject/domain/ports/subject.repository';
 import { SubjectInMemoryRepository } from '../../../subject/adapters/db/subject-in-memory.repository';
+import { EventService } from '../../../events/event-service.service';
+import {
+  CreateQuestionEvent,
+  RemoveQuestionEvent,
+  UpdateQuestionEvent,
+} from '../../../events/question.events';
 
 describe('QuestionService', () => {
   const mockOption = {
     description: 'mock option',
     isCorrect: false,
   };
+
+  const mockSubjectId = '62b9a9f34e0dfa462d7dcbaf';
 
   const mockQuestion: Omit<iQuestion, '_id'> = {
     options: [
@@ -21,7 +33,7 @@ describe('QuestionService', () => {
       mockOption,
       { ...mockOption, isCorrect: true },
     ],
-    subject: 'someSubjectId',
+    subject: mockSubjectId,
     title: 'test question',
   };
 
@@ -37,15 +49,21 @@ describe('QuestionService', () => {
     exists: jest.fn().mockReturnValue(true),
   };
 
-  const mockSubjectId = '62b9a9f34e0dfa462d7dcbaf';
-
   const mockQuestionModel = {
-    create: jest.fn().mockResolvedValue(mockQuestion),
+    create: jest.fn().mockResolvedValue({
+      toObject: jest
+        .fn()
+        .mockReturnValue({ ...mockQuestion, id: '62b9a9f34e0dfa462d7dcbaf' }),
+    }),
     find: jest.fn().mockReturnValue(mockQuestion),
     findById: jest.fn().mockReturnValue(mockQuestion),
-    findByIdAndUpdate: jest
-      .fn()
-      .mockReturnValue({ ...mockQuestion, title: 'altered description' }),
+    findByIdAndUpdate: jest.fn().mockReturnValue({
+      toObject: jest.fn().mockReturnValue({
+        ...mockQuestion,
+        id: '62b9a9f34e0dfa462d7dcbaf',
+        title: 'updated',
+      }),
+    }),
     findByIdAndDelete: jest.fn().mockResolvedValue(mockQuestion),
   };
 
@@ -63,6 +81,7 @@ describe('QuestionService', () => {
           provide: SubjectRepository,
           useClass: SubjectInMemoryRepository,
         },
+        { provide: EventService, useValue: { emit: jest.fn() } },
       ],
       imports: [
         MongooseModule.forFeature([
@@ -81,38 +100,40 @@ describe('QuestionService', () => {
   });
 
   describe('When calling service.create with valid params', () => {
-    test('It should create a new question', async () => {
-      mockQuestionModel.create.mockResolvedValueOnce({
-        ...mockQuestion,
-        _id: '62b9a9f34e0dfa462d7dcbaf',
-        subject: mockSubjectId,
-      });
-      const result = await service.create(mockQuestion, mockSubjectId);
+    test('It should create a new question and emit an event', async () => {
+      const result = await service.create(mockQuestion);
       expect(result).toHaveProperty('question', {
         ...mockQuestion,
-        _id: '62b9a9f34e0dfa462d7dcbaf',
-        subject: mockSubjectId,
+        id: '62b9a9f34e0dfa462d7dcbaf',
       });
+      expect(service.eventService.emit).toHaveBeenCalledWith(
+        new CreateQuestionEvent({
+          ...mockQuestion,
+          id: '62b9a9f34e0dfa462d7dcbaf',
+        } as unknown as Question),
+      );
     });
   });
 
   describe('When calling service.create with invalid request body', () => {
-    test('It should throw an error', async () => {
-      mockQuestionModel.create.mockImplementation(async () => {
+    test('It should throw an error and no events should be emitted', async () => {
+      mockQuestionModel.create.mockImplementationOnce(async () => {
         const error = new Error();
         error.name = 'ValidationError';
         throw error;
       });
       expect(async () => {
-        await service.create(mockQuestion, mockSubjectId);
+        await service.create(mockQuestion);
       }).rejects.toThrow();
+      expect(service.eventService.emit).not.toHaveBeenCalled();
     });
   });
 
   describe('When calling service.create with the id of a non existing subject', () => {
-    test('It should throw an error', async () => {
+    test('It should throw an error and no events should be emitted', async () => {
       mockSubjectModel.exists.mockResolvedValueOnce(null);
-      expect(service.create(mockQuestion, mockSubjectId)).rejects.toThrow();
+      expect(service.create(mockQuestion)).rejects.toThrow();
+      expect(service.eventService.emit).not.toHaveBeenCalled();
     });
   });
 
@@ -142,7 +163,7 @@ describe('QuestionService', () => {
 
   describe('When calling service.findOne with a non existing question id', () => {
     test('It should throw an error', async () => {
-      mockQuestionModel.findById.mockReturnValue(null);
+      mockQuestionModel.findById.mockReturnValueOnce(null);
       expect(async () => {
         await service.findOne('id');
       }).rejects.toThrow();
@@ -150,51 +171,67 @@ describe('QuestionService', () => {
   });
 
   describe('When calling service.update with an existing question id', () => {
-    test('It should return the updated question', async () => {
-      mockQuestionModel.findByIdAndUpdate.mockReturnValueOnce({
-        ...mockQuestion,
-        _id: '62b9a9f34e0dfa462d7dcbaf',
-        subject: mockSubjectId,
-        title: 'updated',
-      });
+    test('It should return the updated question and emit an event', async () => {
       const result = await service.update('id', {
         ...mockQuestion,
         title: 'updated',
       });
       expect(result).toHaveProperty('question', {
         ...mockQuestion,
-        _id: '62b9a9f34e0dfa462d7dcbaf',
+        id: '62b9a9f34e0dfa462d7dcbaf',
         subject: mockSubjectId,
         title: 'updated',
       });
+      expect(service.eventService.emit).toHaveBeenCalledWith(
+        new UpdateQuestionEvent({
+          ...mockQuestion,
+          title: 'updated',
+          id: '62b9a9f34e0dfa462d7dcbaf',
+          subject: mockSubjectId,
+        } as unknown as Question),
+      );
     });
   });
 
   describe('When calling service.update with a non existing question id', () => {
-    test('It should throw an error', async () => {
-      mockQuestionModel.findByIdAndUpdate.mockReturnValue(null);
+    test('It should throw an error and no events should be emitted', async () => {
+      mockQuestionModel.findByIdAndUpdate.mockReturnValueOnce(null);
       expect(async () => {
         await service.update('id', { ...mockQuestion, title: 'updated' });
       }).rejects.toThrow();
+      expect(service.eventService.emit).not.toHaveBeenCalled();
     });
   });
 
   describe('When calling service.delete with an existing question id', () => {
     test('It should return the deleted question', async () => {
       mockQuestionModel.findById.mockResolvedValueOnce({
-        delete: jest.fn().mockResolvedValue(mockQuestion),
-        id: 'id',
+        delete: jest.fn().mockResolvedValue({
+          toObject: jest.fn().mockReturnValue({
+            ...mockQuestion,
+            id: '62b9a9f34e0dfa462d7dcbaf',
+          }),
+        }),
       });
-      expect(await service.remove('id')).toEqual(mockQuestion);
+      expect(await service.remove('id')).toEqual({
+        ...mockQuestion,
+        id: '62b9a9f34e0dfa462d7dcbaf',
+      });
+      expect(service.eventService.emit).toHaveBeenCalledWith(
+        new RemoveQuestionEvent({
+          id: 'id',
+        }),
+      );
     });
   });
 
   describe('When calling service.delete with a non existing question id', () => {
-    test('It should throw an error', async () => {
+    test('It should throw an error and no events should be emitted', async () => {
       mockQuestionModel.findById.mockResolvedValueOnce(null);
       expect(async () => {
         await service.remove('id');
       }).rejects.toThrow();
+      expect(service.eventService.emit).not.toHaveBeenCalled();
     });
   });
 });

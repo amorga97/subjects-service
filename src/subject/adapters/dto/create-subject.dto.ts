@@ -1,4 +1,9 @@
-import { IsString, MaxLength, ValidateNested } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 
 export class CreateSubjectDto {
   @IsString()
@@ -6,11 +11,13 @@ export class CreateSubjectDto {
   title: string;
   @IsString()
   author: string;
+  @IsOptional()
   @IsString()
   description?: string;
+  @IsOptional()
   @IsString()
   institution?: string;
-  @IsString()
+  @IsOptional()
   @ValidateNested({ each: true })
-  meta_data?: [string, string][];
+  meta_data?: string[][];
 }
