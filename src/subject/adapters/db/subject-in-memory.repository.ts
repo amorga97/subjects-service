@@ -20,11 +20,15 @@ export class SubjectInMemoryRepository implements SubjectRepository {
     return await this.Subject.findOne(search);
   }
   async findByIdAndUpdate(id: string, updatedSubjectData: Partial<iSubject>) {
-    return (
-      await this.Subject.findByIdAndUpdate(id, updatedSubjectData, {
+    const subject = await this.Subject.findByIdAndUpdate(
+      id,
+      updatedSubjectData,
+      {
         new: true,
-      })
-    ).toObject();
+      },
+    );
+    if (subject === null) throw new NotFoundException();
+    return subject.toObject();
   }
   async findByIdAndDelete(id: string) {
     const subject = await this.Subject.findById(id);
