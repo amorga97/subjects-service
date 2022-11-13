@@ -27,6 +27,8 @@ describe('SubjectService', () => {
     author: mockAuthorId,
   };
 
+  const mockSubjectInDb = { ...mockSubject, id: '62b9a9f34e0dfa462d7dcbaf' };
+
   const mockQuestion: iQuestion = {
     subject: '123123123',
     title: 'Test',
@@ -38,19 +40,18 @@ describe('SubjectService', () => {
     ],
   };
 
+  const mockQueryResult = {
+    toObject: jest.fn().mockReturnValue(mockSubjectInDb),
+  };
+
   const mockSubjectModel = {
-    create: jest.fn().mockResolvedValue({
-      toObject: jest
-        .fn()
-        .mockReturnValue({ ...mockSubject, id: '62b9a9f34e0dfa462d7dcbaf' }),
-    }),
-    findOne: jest.fn().mockResolvedValue(mockSubject),
-    findById: jest.fn().mockResolvedValue(mockSubject),
+    create: jest.fn().mockResolvedValue(mockQueryResult),
+    findOne: jest.fn().mockResolvedValue(mockQueryResult),
+    findById: jest.fn().mockResolvedValue(mockQueryResult),
     findByIdAndUpdate: jest.fn().mockResolvedValue({
       toObject: jest.fn().mockReturnValue({
-        ...mockSubject,
+        ...mockSubjectInDb,
         title: 'updated',
-        id: '62b9a9f34e0dfa462d7dcbaf',
       }),
     }),
   };
@@ -87,15 +88,9 @@ describe('SubjectService', () => {
   describe('When calling service.create with a new subjects info', () => {
     test('Then it should return the new subject saved to the DB and emit an event', async () => {
       const result = await service.create(mockSubject);
-      expect(result).toEqual({
-        ...mockSubject,
-        id: '62b9a9f34e0dfa462d7dcbaf',
-      });
+      expect(result).toEqual(mockSubjectInDb);
       expect(service.eventService.emit).toHaveBeenCalledWith(
-        new CreateSubjectEvent({
-          ...mockSubject,
-          id: '62b9a9f34e0dfa462d7dcbaf',
-        } as unknown as Subject),
+        new CreateSubjectEvent(mockSubjectInDb as unknown as Subject),
       );
     });
   });
@@ -116,13 +111,13 @@ describe('SubjectService', () => {
   describe('When calling service.findOne with a valid subject id with questions', () => {
     test('Then it should return the subject from the db', async () => {
       const result = await service.findOne('id', true);
-      expect(result).toEqual({ ...mockSubject, questions: [mockQuestion] });
+      expect(result).toEqual({ ...mockSubjectInDb, questions: [mockQuestion] });
     });
   });
 
   describe('When calling service.findOne with a valid subject id without questions', () => {
     test('Then it should return the subject from the db', async () => {
-      expect(await service.findOne('id', false)).toEqual(mockSubject);
+      expect(await service.findOne('id', false)).toEqual(mockSubjectInDb);
     });
   });
 
@@ -138,19 +133,17 @@ describe('SubjectService', () => {
   describe('When calling service.update with a valid subject id', () => {
     test('Then it should return the updated subject data and emit an event', async () => {
       const result = await service.update('id', {
-        ...mockSubject,
+        ...mockSubjectInDb,
         title: 'updated',
       });
       expect(result).toEqual({
-        ...mockSubject,
+        ...mockSubjectInDb,
         title: 'updated',
-        id: '62b9a9f34e0dfa462d7dcbaf',
       });
       expect(service.eventService.emit).toHaveBeenCalledWith(
         new UpdateSubjectEvent({
-          ...mockSubject,
+          ...mockSubjectInDb,
           title: 'updated',
-          id: '62b9a9f34e0dfa462d7dcbaf',
         } as unknown as Subject),
       );
     });
@@ -168,18 +161,16 @@ describe('SubjectService', () => {
 
   describe('When calling service.remove with a valid subject id', () => {
     test('Then it should return the deleted subject and emit an event', async () => {
+      const mockResponse = {
+        'deleted-questions': 1,
+        subject: mockSubjectInDb,
+      };
       mockSubjectModel.findById.mockResolvedValueOnce({
         delete: jest.fn().mockResolvedValue({
-          toObject: jest.fn().mockReturnValue({
-            ...mockSubject,
-            id: '62b9a9f34e0dfa462d7dcbaf',
-          }),
+          toObject: jest.fn().mockReturnValue(mockSubjectInDb),
         }),
       });
-      expect(await service.remove('id')).toEqual({
-        ...mockSubject,
-        id: '62b9a9f34e0dfa462d7dcbaf',
-      });
+      expect(await service.remove('id')).toEqual(mockResponse);
       expect(service.eventService.emit).toHaveBeenCalledWith(
         new RemoveSubjectEvent({ id: 'id' }),
       );

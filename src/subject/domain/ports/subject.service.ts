@@ -58,7 +58,11 @@ export class SubjectService {
 
   async remove(id: string) {
     const removedSubject = await this.Subject.findByIdAndDelete(id);
+    const { deletedCount } = await this.Question.deleteManyBySubjectId(id);
     this.eventService.emit(new RemoveSubjectEvent({ id }));
-    return removedSubject;
+    return {
+      subject: removedSubject,
+      'deleted-questions': deletedCount,
+    };
   }
 }
