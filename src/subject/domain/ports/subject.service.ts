@@ -40,7 +40,7 @@ export class SubjectService {
     const subject = await this.Subject.findById(id);
     if (subject === null) throw new NotFoundException();
     if (withQuestions) {
-      const questions = await this.Question.find({ subject: subject._id });
+      const questions = await this.Question.find({ subject: subject.id });
       return { ...subject, questions };
     }
     return subject;
@@ -58,7 +58,11 @@ export class SubjectService {
 
   async remove(id: string) {
     const removedSubject = await this.Subject.findByIdAndDelete(id);
+    const { deletedCount } = await this.Question.deleteManyBySubjectId(id);
     this.eventService.emit(new RemoveSubjectEvent({ id }));
-    return removedSubject;
+    return {
+      subject: removedSubject,
+      'deleted-questions': deletedCount,
+    };
   }
 }
